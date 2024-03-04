@@ -1,166 +1,184 @@
-interface Nave {
+type PlanetSituation =
+  | "Habitado"
+  | "Habitável"
+  | "Inabitável"
+  | "Inexplorado"
+  | "";
+
+type PlanetCoordinates = [number, number, number, number];
+
+type Planet = {
   name: string;
-  pilot: string;
-  crewLimit: number;
-  crew: string[];
-  inMission: boolean;
-}
+  coordinates: PlanetCoordinates;
+  situation: PlanetSituation;
+  satellites: string[];
+};
 
-const spaceships: Nave[] = [];
+const planets: Planet[] = [];
 
-function addSpaceship(name: string, pilot: string, crewLimit: number) {
-  const spaceship = {
-    name,
-    pilot,
-    crewLimit,
-    crew: [],
-    inMission: false,
-  };
-
-  spaceships.push(spaceship);
-
-  alert(`A nave ${spaceship.name} foi registrada.`);
-}
-
-function findSpaceship(name: string) {
-  const findSpaceship = spaceships.find((ship) => {
-    return ship.name === name;
-  });
-
-  return findSpaceship;
-}
-
-function addCrewMember(
-  member: string,
-  spaceship: { name: string; crewLimit: number; crew: string[] }
+function addPlanet(
+  name: string,
+  coordinates: PlanetCoordinates,
+  situation: PlanetSituation
 ) {
-  if (spaceship.crew.length >= spaceship.crewLimit) {
-    alert(`${member} não pode ser adicionado à tripulação. Limite atingido.`);
+  planets.push({
+    name,
+    coordinates,
+    situation,
+    satellites: [],
+  });
+  alert(`O planeta ${name} foi adicionado com sucesso`);
+}
+
+function findPlanet(name: string) {
+  const planet = planets.find((ele) => ele.name == name);
+  return planet ?? false;
+}
+
+function updateSituation(situation: PlanetSituation, planet: Planet) {
+  planet.situation = situation;
+
+  alert(
+    `A situação do planeta ${planet.name} foi atualizada para ${situation}`
+  );
+}
+
+function addSatellite(name: string, planet: Planet) {
+  planet.satellites.push(name);
+  alert(`O satélite ${name} foi adicionado ao planeta ${planet.name}`);
+}
+
+function removeSatellite(name: string, planet: Planet) {
+  planet.satellites = planet.satellites.filter(
+    (satellite) => satellite !== name
+  );
+  alert(`O satálite ${name} foi removido do planeta ${planet.name}`);
+}
+
+function prompSituation() {
+  let situation: PlanetSituation = "";
+  let validSituation = false;
+
+  while (!validSituation) {
+    const situationInput = prompt(
+      "Informe a situação do planeta:\n1 - Habitado\n2 - Habitável\n3 - Inabitável\n4 - Inexplorado"
+    );
+
+    switch (situationInput) {
+      case "1":
+        situation = "Habitado";
+        validSituation = true;
+        break;
+      case "2":
+        situation = "Habitável";
+        validSituation = true;
+        break;
+      case "3":
+        situation = "Inabitável";
+        validSituation = true;
+        break;
+      case "4":
+        situation = "Inexplorado";
+        validSituation = true;
+        break;
+      default:
+        alert("Situação inválida!");
+        break;
+    }
+  }
+
+  return situation;
+}
+
+function promptPlanet(callbackFn: (planet: Planet) => void) {
+  const planetName = String(prompt("Informe o nome do planeta:"));
+  const planet = findPlanet(planetName);
+
+  if (planet) {
+    callbackFn(planet);
   } else {
-    spaceship.crew.push(member);
-    alert(`${member} foi adicionado à tripulação da ${spaceship.name}`);
+    alert("Planeta não encontrado");
   }
 }
 
-function sendInMission(spaceship: {
-  name: string;
-  crewLimit: number;
-  crew: string[];
-  inMission: boolean;
-}) {
-  if (spaceship.inMission) {
-    alert(`${spaceship.name} não pode ser enviada. Nave já em missão.`);
-  } else if (spaceship.crew.length < Math.floor(spaceship.crewLimit / 3)) {
-    alert(`${spaceship.name} não pode ser enviada. Tripulação insuficiente.`);
-  } else {
-    spaceship.inMission = true;
-    alert(`${spaceship.name} enviada para a missão!`);
-  }
-}
+function firstOption() {
+  const name = String(prompt("Informe o nome do planeta:"));
+  const coordA = Number(prompt("Informe a primeira coordenada"));
+  const coordB = Number(prompt("Informe a segunda coordenada"));
+  const coordC = Number(prompt("Informe a terceira coordenada"));
+  const coordD = Number(prompt("Informe a quarta coordenada"));
 
-function firstMenuOption() {
-  const name = String(prompt("Qual é o nome da nave a ser registrada?"));
-  const pilot = String(prompt(`Qual é o nome do piloto da ${name}`));
-  const crewLimit = Number(prompt(`Quantos tripulantes a ${name} suporta?`));
-
+  const situation = prompSituation();
   const confirmation = confirm(
-    `Confirma o registro da nave ${name}?\nPiloto: ${pilot}\nTamanho da Tripulação: ${crewLimit}`
+    `Confirma o registro do planeta ${name}?\nCoordenadas: (${coordA}, ${coordB}, ${coordC}, ${coordD})\nSituação: ${situation}`
   );
 
   if (confirmation) {
-    addSpaceship(name, pilot, crewLimit);
+    addPlanet(name, [coordA, coordB, coordC, coordD], situation);
   }
 }
 
-function secondMenuOption() {
-  const member = String(prompt("Qual é o nome do tripulante?"));
-  const spaceshipName = String(
-    prompt(`Para qual nave ${member} deverá ser designado?`)
-  );
+function secondOption() {
+  promptPlanet((planet) => {
+    const situation = prompSituation();
+    updateSituation(situation, planet);
+  });
+}
 
-  const spaceship = findSpaceship(spaceshipName);
+function thirdOption() {
+  promptPlanet((planet) => {
+    const satellite = String(prompt("Informe o nome do satétile"));
+    addSatellite(satellite, planet);
+  });
+}
 
-  if (spaceship) {
-    const confirmation = confirm(
-      `Confirma a inclusão de ${member} na tripulação da ${spaceship.name}?`
+function fourthOption() {
+  promptPlanet((planet) => {
+    const satelliteRemove = String(
+      prompt("Informe o nome do satétile a ser removido")
     );
-
-    if (confirmation) {
-      addCrewMember(member, spaceship);
-    }
-  }
+    removeSatellite(satelliteRemove, planet);
+  });
 }
 
-function thirdMenuOption() {
-  const spaceshipName = String(prompt("Qual é o nome da nave a ser enviada?"));
-  const spaceship = findSpaceship(spaceshipName);
-
-  if (spaceship) {
-    const confirmation = confirm(
-      `Confirma e envio da ${spaceship.name} na missão?`
-    );
-
-    if (confirmation) {
-      sendInMission(spaceship);
-    }
-  }
-}
-
-function fourthMenuOption() {
-  let list = "Naves Registradas:\n";
-
-  spaceships.forEach(
-    (spaceship: {
-      name: string;
-      pilot: string;
-      crewLimit: number;
-      crew: string[];
-      inMission: boolean;
-    }) => {
-      list += `
-				Nave: ${spaceship.name}
-				Piloto: ${spaceship.pilot}
-				Em missão? ${spaceship.inMission ? "Sim" : "Não"}
-				Tamanho Máximo da Triuplação: ${spaceship.crewLimit}
-				Tripulantes: ${spaceship.crew.length}
+function fifthOption() {
+  let list = "Planetas:\n";
+  planets.forEach((planet) => {
+    list += `
+				Nave: ${planet.name}
+				Coordenadas: ${planet.coordinates}
+				Situação ${planet.situation}
+				Satélites: ${planet.satellites.length}
 			`;
-
-      spaceship.crew.forEach((member) => {
-        list += `    - ${member}\n`;
-      });
-    }
-  );
-
+    planet.satellites.forEach((sat) => {
+      list += `    - ${sat}\n`;
+    });
+  });
   alert(list);
 }
 
-let userOption = 0;
+let option = 0;
 
-while (userOption !== 5) {
-  const menu = `Painel Principal
-			1 - Registrar uma nova nave
-			2 - Adicionar membro da tripulação
-			3 - Enviar nave em missão
-			4 - Listar naves registradas
-			5 - Encerrar
-		`;
-
-  userOption = Number(prompt(menu));
-
-  switch (userOption) {
+while (option !== 5) {
+  const menu = `Menu\n1 - Registrar um planeta\n2 - Atualizar situação do planeta\n3 - Adicionar um satélite ao planeta\n4 - Remover um satélite ao planeta\n5 - Listar planetas\n6 - Encerrar`;
+  option = Number(prompt(menu));
+  switch (option) {
     case 1:
-      firstMenuOption();
+      firstOption();
       break;
     case 2:
-      secondMenuOption();
+      secondOption();
       break;
     case 3:
-      thirdMenuOption();
+      thirdOption();
       break;
     case 4:
-      fourthMenuOption();
+      fourthOption();
       break;
     case 5:
+      fifthOption();
+      break;
+    case 6:
       alert("Encerrando o sistema...");
       break;
     default:
